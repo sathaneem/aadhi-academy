@@ -5,29 +5,20 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    // ✅ Check current user on mount
     supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
+      if (data?.user) setUser(data.user);
+      else setUser(null);
     });
 
-    // ✅ Listen for login/logout
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
+      if (session?.user) setUser(session.user);
+      else setUser(null);
     });
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -36,34 +27,81 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex gap-4 p-4 bg-gray-800 text-white items-center">
-      <Link href="/">Home</Link>
-      <Link href="/about">About</Link>
-      <Link href="/courses">Courses</Link>
-      <Link href="/contact">Contact</Link>
+    <nav className="sticky top-0 bg-white shadow-md z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+        {/* Logo */}
+        <Link href="/" className="text-2xl font-bold text-indigo-600">
+          AADHI Academy
+        </Link>
 
-      <div className="ml-auto flex items-center gap-4">
-        {user ? (
-          <>
-            <span className="text-sm text-gray-300">
-              Welcome <strong>{user.email}</strong>
-            </span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 px-3 py-1 rounded"
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link href="/login">Login</Link>
-            <Link href="/signup" className="ml-4">
-              Signup
-            </Link>
-          </>
-        )}
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-6 text-gray-700 font-medium">
+          <Link href="/" className="hover:text-indigo-600 transition">Home</Link>
+          <Link href="/about" className="hover:text-indigo-600 transition">About</Link>
+          <Link href="/courses" className="hover:text-indigo-600 transition">Courses</Link>
+          <Link href="/contact" className="hover:text-indigo-600 transition">Contact</Link>
+        </div>
+
+        {/* Auth Buttons (Desktop) */}
+        <div className="hidden md:flex items-center gap-4">
+          {user ? (
+            <>
+              <span className="text-sm text-gray-600">Welcome <strong>{user.email}</strong></span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="px-4 py-2 rounded hover:bg-gray-100 transition">Login</Link>
+              <Link href="/signup" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">Signup</Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden flex flex-col gap-1 focus:outline-none"
+        >
+          <span className="w-6 h-0.5 bg-gray-800"></span>
+          <span className="w-6 h-0.5 bg-gray-800"></span>
+          <span className="w-6 h-0.5 bg-gray-800"></span>
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden bg-white shadow-lg px-6 py-4 flex flex-col gap-4 text-gray-700 font-medium">
+          <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link href="/about" onClick={() => setMenuOpen(false)}>About</Link>
+          <Link href="/courses" onClick={() => setMenuOpen(false)}>Courses</Link>
+          <Link href="/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
+          {user ? (
+            <>
+              <span className="text-sm text-gray-600">Welcome <strong>{user.email}</strong></span>
+              <button
+                onClick={() => { handleLogout(); setMenuOpen(false); }}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link href="/signup" onClick={() => setMenuOpen(false)}>Signup</Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
+
+
+  
+
 }
