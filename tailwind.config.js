@@ -8,6 +8,6 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/line-clamp'), // ✅ allows line-clamp-2 etc.
+    require('@tailwindcss/line-clamp'), // ✅ optional plugin
   ],
 };
